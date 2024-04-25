@@ -466,20 +466,15 @@ typedef struct {
 
 __declspec(dllexport)
 audrey_jpeg_header
-read_jpeg_header(unsigned char* buffer, size_t bufferlen) { // change from int to size_t
-    // reformat data into custom struct for py
+read_jpeg_header(unsigned char* buffer, size_t bufferlen) {
     audrey_jpeg_header jpgheader;
-
-    // create and intialize struct
     struct jpeg_decompress_struct info;
     struct jpeg_error_mgr jerr;
     info.err = jpeg_std_error(&jerr);
     jpeg_create_decompress(&info);
 
-    // process buffer into struct
     jpeg_mem_src(&info, buffer, bufferlen);
 
-    // read in header
     jpeg_read_header(&info, TRUE);
 
     // copy vals to our struct
@@ -497,7 +492,6 @@ read_jpeg_header(unsigned char* buffer, size_t bufferlen) { // change from int t
         component.block_height = info.cur_comp_info[i]->height_in_blocks;
         component.block_width = info.cur_comp_info[i]->width_in_blocks;
         component.dct_scaled_size = info.cur_comp_info[i]->DCT_scaled_size;
-
         jpgheader.components[i] = component;
     }
 
@@ -534,19 +528,8 @@ main(
     struct cdjpeg_progress_mgr src_progress, dst_progress;
     jvirt_barray_ptr *src_coef_arrays;
     jvirt_barray_ptr *dst_coef_arrays;
-
-    // initialize output struct
     audrey_jpeg dstjpg;
     dstjpg.buf = NULL;
-    dstjpg.buflen = 0;
-
-    // REMOVE ME
-    /*
-    printf("args:\n");
-    for (int a = 0;a < argc;a++) {
-        printf("%s\n", argv[a]);
-    }
-    */
 
     progname = "jpegtran";
 
@@ -668,10 +651,6 @@ main(
     jcopy_markers_execute(&srcinfo, &dstinfo, copyoption);
 
     /* Execute image transformation, if any */
-    /*
-    printf("docrop %i\n", transformoption.crop);
-    printf("crop H%i W%i\n", transformoption.output_height, transformoption.output_width);
-    */
     jtransform_execute_transformation(&srcinfo, &dstinfo, src_coef_arrays,
                                     &transformoption);
 
@@ -695,55 +674,3 @@ main(
 
     return dstjpg;
 }
-
-/*
-#include <stdio.h>
-#include <stdlib.h>
-void main() {
-    FILE* fp;
-    int bufsize;
-
-    // open infile
-    fp = fopen(
-            "G:\\2023.08.20 realtime sc meta scraper\\scrape_images\\libjpeg-turbo api\\_in.jpg", READ_BINARY);
-
-    // seek to end and get len
-    fseek(fp, 0, SEEK_END);
-    bufsize = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    
-    unsigned char* bufptr;
-    bufptr = malloc(bufsize);
-    fread(bufptr, 1, bufsize, fp);
-
-    audrey_jpeg_header balls2 = read_jpeg_header(bufptr, bufsize);
-
-    free(bufptr);
-    exit(0);
-
-    unsigned char* balls[] = { "jpegtran", "-perfect", "-copy", "all", "-crop", "104x104", NULL};
-    audrey_jpeg penis;
-
-    for (int i = 0; i < 1000; i++) {
-        penis = main2(
-            6,
-            balls,
-            bufptr,
-            bufsize,
-            0,
-            0,
-            FALSE
-        );
-
-        free(penis.buf);
-
-    }
-
-    printf("%i\n", penis.returncode);
-    printf("%i\n", penis.buflen);
-
-    free(bufptr);
-
-    exit(0);
-}
-*/
